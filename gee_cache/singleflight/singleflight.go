@@ -18,7 +18,7 @@ type Group struct {
 func (g *Group) Do(key string,fn func() (interface{},error)) (interface{},error) {
 	g.mu.Lock()
 	if g.m == nil {
-		g.m = make(map[string]*call)
+		g.m = make(map[string]*call)	// 延迟初始化，提升内存使用效率
 	}
 	if c,ok := g.m[key];ok {
 		g.mu.Unlock()
@@ -27,11 +27,11 @@ func (g *Group) Do(key string,fn func() (interface{},error)) (interface{},error)
 	}
 
 	c := new(call)
-	c.wg.Add(1)
+	c.wg.Add(1)	// 发起请求前加锁
 	g.m[key] = c
 	g.mu.Unlock()
-	c.val,c.err = fn()
-	c.wg.Done()
+	c.val,c.err = fn()	// 发起请求
+	c.wg.Done()	// 请求结束
 
 	g.mu.Lock()
 	delete(g.m,key)

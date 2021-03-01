@@ -5,6 +5,7 @@ import (
 	"sync"
 )
 
+// Getter 当缓存不存在时，通过实现了该接口的函数，获取源数据
 type Getter interface {
 	Get(key string) ([]byte,error)
 }

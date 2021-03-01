@@ -2,10 +2,10 @@ package gee_cache
 
 import (
 	"errors"
+	pb "gee_cache/geecachepb"
 	"gee_cache/singleflight"
 	"log"
 	"sync"
-	pb "gee_cache/geecachepb"
 )
 
 type Group struct {
@@ -21,6 +21,7 @@ var (
 	groups = make(map[string]*Group)
 )
 
+// NewGroup 缓存根据name分组，通过getter接口获取源数据
 func NewGroup(name string,cacheBytes int64,getter Getter) *Group {
 	if getter == nil {
 		panic("nil Getter")
@@ -48,6 +49,7 @@ func GetGroup(name string) *Group {
 	return g
 }
 
+// RegisterPeers 将peer实例注入到group中
 func (g *Group) RegisterPeers(peers PeerPicker) {
 	if g.peers != nil {
 		panic("registerPeerPicker called more than once")
@@ -56,6 +58,7 @@ func (g *Group) RegisterPeers(peers PeerPicker) {
 	g.peers = peers
 }
 
+// load 如果peers没有实例化或者获取失败则从本地获取
 func (g *Group) load(key string) (ByteView, error) {
 	bv,err := g.loader.Do(key, func() (interface{}, error) {
 		if g.peers != nil {
@@ -92,6 +95,7 @@ func (g *Group) Get(key string) (ByteView, error) {
 	return g.load(key)
 }
 
+// getFromPeer 访问远程节点获取缓存
 func (g *Group) getFromPeer(peer PeerGetter, key string) (ByteView, error) {
 	req := &pb.Request{
 		Group: g.name,
