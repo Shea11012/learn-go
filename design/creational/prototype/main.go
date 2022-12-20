@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 )
 
@@ -41,6 +42,7 @@ func (f *folder) clone() inode {
 }
 
 func main() {
+	println(runtime.GOOS)
 	file1 := &file{name: "File1"}
 	file2 := &file{name: "File2"}
 	file3 := &file{name: "File3"}
